@@ -44,5 +44,18 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(data)
     })
+  },
+  process: {
+    transform: (moduleId: string) => request(`/process/transform/${moduleId}`, {
+      method: 'POST'
+    }),
+    translate: (content: string, language: string) => request('/process/translate', {
+      method: 'POST',
+      body: JSON.stringify({ content, language })
+    }),
+    questions: (content: string, language: string) => request('/process/questions', {
+      method: 'POST',
+      body: JSON.stringify({ content, language })
+    })
   }
 }
