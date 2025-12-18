@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="6" fill="#2563eb"/>
+  <path d="M9 16l4 4 10-10" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
+```
+
+---
+
+**That's everything.** Your full file structure:
+```
+clearproof/
+├── public/
+│   └── favicon.svg
+├── src/
+│   ├── components/
+│   │   └── layouts/
+│   │       ├── ManagerLayout.tsx
+│   │       └── WorkerLayout.tsx
+│   ├── pages/
+│   │   ├── Landing.tsx
+│   │   ├── Login.tsx
+│   │   ├── manager/
+│   │   │   ├── Dashboard.tsx
+│   │   │   ├── Upload.tsx
+│   │   │   ├── Modules.tsx
+│   │   │   └── Reports.tsx
+│   │   └── worker/
+│   │       └── Verify.tsx
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── index.css
+├── index.html
+├── package.json
+├── postcss.config.js
+├── tailwind.config.js
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.ts
