@@ -1,12 +1,27 @@
 const API_URL = 'https://clearproof-api-production.up.railway.app/api'
 
-async function request(endpoint: string, options: RequestInit = {}) {
+let getToken: (() => Promise<string | null>) | null = null
+
+export const setAuthGetter = (getter: () => Promise<string | null>) => {
+  getToken = getter
+}
+
+async function request(endpoint: string, options: RequestInit = {}, requiresAuth = true) {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...options.headers as Record<string, string>
+  }
+
+  if (requiresAuth && getToken) {
+    const token = await getToken()
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+  }
+
   const res = await fetch(`${API_URL}${endpoint}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers
-    }
+    headers
   })
 
   if (!res.ok) {
@@ -19,7 +34,7 @@ async function request(endpoint: string, options: RequestInit = {}) {
 export const api = {
   modules: {
     list: () => request('/modules'),
-    get: (id: string) => request(`/modules/${id}`),
+    get: (id: string) => request(`/modules/${id}`, {}, false),
     create: (data: Record<string, unknown>) => request('/modules', {
       method: 'POST',
       body: JSON.stringify(data)
@@ -43,7 +58,7 @@ export const api = {
     create: (data: Record<string, unknown>) => request('/verifications', {
       method: 'POST',
       body: JSON.stringify(data)
-    })
+    }, false)
   },
   process: {
     transform: (moduleId: string) => request(`/process/transform/${moduleId}`, {
@@ -52,10 +67,10 @@ export const api = {
     translate: (content: string, language: string) => request('/process/translate', {
       method: 'POST',
       body: JSON.stringify({ content, language })
-    }),
+    }, false),
     questions: (content: string, language: string) => request('/process/questions', {
       method: 'POST',
       body: JSON.stringify({ content, language })
-    })
+    }, false)
   }
 }
