@@ -18,11 +18,23 @@ const languages = [
   { code: 'hi', name: 'हिन्दी' },
 ]
 
+interface Section {
+  title: string
+  content: string
+  critical: boolean
+}
+
+interface Question {
+  scenario: string
+  question: string
+  options: string[]
+  correctIndex: number
+}
+
 interface Module {
   id: string
   title: string
   processed_content?: string
-  questions?: string
 }
 
 export default function Verify() {
@@ -32,9 +44,15 @@ export default function Verify() {
   const [workerName, setWorkerName] = useState('')
   const [workerId, setWorkerId] = useState('')
   const [module, setModule] = useState<Module | null>(null)
+  const [sections, setSections] = useState<Section[]>([])
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [answers, setAnswers] = useState<number[]>([])
+  const [currentQuestion, setCurrentQuestion] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [processing, setProcessing] = useState(false)
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [score, setScore] = useState(0)
 
   useEffect(() => {
     async function fetchModule() {
@@ -53,18 +71,96 @@ export default function Verify() {
     fetchModule()
   }, [moduleId])
 
+  const handleLanguageSelect = async (langCode: string) => {
+    setSelectedLanguage(langCode)
+    setStep('info')
+  }
+
+  const handleInfoSubmit = async () => {
+    if (!module?.processed_content) {
+      setError('Module content not ready')
+      return
+    }
+
+    setProcessing(true)
+    try {
+      let content = module.processed_content
+
+      if (selectedLanguage !== 'en') {
+        const translated = await api.process.translate(content, selectedLanguage)
+        content = translated.translated
+      }
+
+      try {
+        const parsed = JSON.parse(content)
+        setSections(parsed.sections || [])
+      } catch {
+        setSections([{ title: 'Safety Information', content, critical: false }])
+      }
+
+      setStep('content')
+    } catch (err) {
+      setError('Failed to load content')
+      console.error(err)
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  const handleContentComplete = async () => {
+    setProcessing(true)
+    try {
+      const contentForQuestions = sections.map(s => `${s.title}: ${s.content}`).join('\n\n')
+      const langName = languages.find(l => l.code === selectedLanguage)?.name || 'English'
+      const result = await api.process.questions(contentForQuestions, langName)
+      
+      try {
+        const parsed = JSON.parse(result.questions)
+        setQuestions(parsed.questions || [])
+        setAnswers(new Array(parsed.questions?.length || 0).fill(-1))
+      } catch {
+        setError('Failed to parse questions')
+      }
+
+      setStep('questions')
+    } catch (err) {
+      setError('Failed to generate questions')
+      console.error(err)
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  const handleAnswer = (optionIndex: number) => {
+    const newAnswers = [...answers]
+    newAnswers[currentQuestion] = optionIndex
+    setAnswers(newAnswers)
+  }
+
+  const handleNext = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion(currentQuestion + 1)
+    }
+  }
+
   const handleComplete = async () => {
     setSubmitting(true)
     try {
+      const correct = answers.filter((a, i) => a === questions[i].correctIndex).length
+      const calculatedScore = Math.round((correct / questions.length) * 100)
+      setScore(calculatedScore)
+
       await api.verifications.create({
         module_id: moduleId,
         worker_name: workerName,
         worker_id: workerId,
         language_used: selectedLanguage,
-        score: 100,
-        passed: true,
+        answers: JSON.stringify(answers),
+        score: calculatedScore,
+        passed: calculatedScore >= 80,
         completed_at: new Date().toISOString()
       })
+
       setStep('complete')
     } catch (err) {
       console.error(err)
@@ -102,10 +198,7 @@ export default function Verify() {
           {languages.map((lang) => (
             <button
               key={lang.code}
-              onClick={() => {
-                setSelectedLanguage(lang.code)
-                setStep('info')
-              }}
+              onClick={() => handleLanguageSelect(lang.code)}
               className="px-4 py-3 text-left bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
             >
               {lang.name}
@@ -132,6 +225,7 @@ export default function Verify() {
               value={workerName}
               onChange={(e) => setWorkerName(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={processing}
               required
             />
           </div>
@@ -145,18 +239,28 @@ export default function Verify() {
               value={workerId}
               onChange={(e) => setWorkerId(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={processing}
               required
             />
           </div>
         </div>
 
         <button
-          onClick={() => setStep('content')}
-          disabled={!workerName || !workerId}
+          onClick={handleInfoSubmit}
+          disabled={!workerName || !workerId || processing}
           className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
-          Continue
-          <ChevronRight size={18} />
+          {processing ? (
+            <>
+              <Loader className="animate-spin" size={18} />
+              Loading content...
+            </>
+          ) : (
+            <>
+              Continue
+              <ChevronRight size={18} />
+            </>
+          )}
         </button>
       </div>
     )
@@ -167,70 +271,120 @@ export default function Verify() {
       <div>
         <h1 className="text-xl font-semibold text-gray-900 mb-4">{module.title}</h1>
         
-        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-          <p className="text-gray-700 leading-relaxed">
-            {module.processed_content || '[Content will be translated and displayed here]'}
-          </p>
+        <div className="space-y-4 mb-6">
+          {sections.map((section, index) => (
+            <div 
+              key={index} 
+              className={`bg-white border rounded-lg p-4 ${
+                section.critical ? 'border-red-300 bg-red-50' : 'border-gray-200'
+              }`}
+            >
+              <h2 className="font-semibold text-gray-900 mb-2">{section.title}</h2>
+              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">{section.content}</p>
+            </div>
+          ))}
         </div>
 
         <button
-          onClick={() => setStep('questions')}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          I've read this
-          <ChevronRight size={18} />
-        </button>
-      </div>
-    )
-  }
-
-  if (step === 'questions') {
-    return (
-      <div>
-        <h1 className="text-xl font-semibold text-gray-900 mb-4">Check Your Understanding</h1>
-
-        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-          <p className="font-medium text-gray-900 mb-3">
-            [Scenario-based question will appear here]
-          </p>
-          <div className="flex flex-col gap-2">
-            <button className="px-4 py-3 text-left border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
-              Option A
-            </button>
-            <button className="px-4 py-3 text-left border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
-              Option B
-            </button>
-            <button className="px-4 py-3 text-left border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
-              Option C
-            </button>
-          </div>
-        </div>
-
-        <button
-          onClick={handleComplete}
-          disabled={submitting}
+          onClick={handleContentComplete}
+          disabled={processing}
           className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300"
         >
-          {submitting ? (
+          {processing ? (
             <>
               <Loader className="animate-spin" size={18} />
-              Submitting...
+              Preparing questions...
             </>
           ) : (
-            'Submit'
+            <>
+              I've read this
+              <ChevronRight size={18} />
+            </>
           )}
         </button>
       </div>
     )
   }
 
+  if (step === 'questions' && questions.length > 0) {
+    const q = questions[currentQuestion]
+    const isLast = currentQuestion === questions.length - 1
+    const hasAnswered = answers[currentQuestion] !== -1
+
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-xl font-semibold text-gray-900">Check Your Understanding</h1>
+          <span className="text-sm text-gray-500">
+            {currentQuestion + 1} / {questions.length}
+          </span>
+        </div>
+
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+          <p className="text-gray-600 mb-2 text-sm italic">{q.scenario}</p>
+          <p className="font-medium text-gray-900 mb-4">{q.question}</p>
+          <div className="flex flex-col gap-2">
+            {q.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleAnswer(index)}
+                className={`px-4 py-3 text-left border rounded-lg transition-colors ${
+                  answers[currentQuestion] === index
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {isLast ? (
+          <button
+            onClick={handleComplete}
+            disabled={!hasAnswered || submitting}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300"
+          >
+            {submitting ? (
+              <>
+                <Loader className="animate-spin" size={18} />
+                Submitting...
+              </>
+            ) : (
+              'Submit'
+            )}
+          </button>
+        ) : (
+          <button
+            onClick={handleNext}
+            disabled={!hasAnswered}
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300"
+          >
+            Next
+            <ChevronRight size={18} />
+          </button>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="text-center">
-      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-        <CheckCircle className="text-green-600" size={32} />
+      <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
+        score >= 80 ? 'bg-green-100' : 'bg-amber-100'
+      }`}>
+        <CheckCircle className={score >= 80 ? 'text-green-600' : 'text-amber-600'} size={32} />
       </div>
-      <h1 className="text-xl font-semibold text-gray-900 mb-2">Verified</h1>
-      <p className="text-gray-600">Your comprehension has been recorded. You may now proceed.</p>
+      <h1 className="text-xl font-semibold text-gray-900 mb-2">
+        {score >= 80 ? 'Verified' : 'Not Passed'}
+      </h1>
+      <p className="text-gray-600 mb-2">Score: {score}%</p>
+      <p className="text-gray-600">
+        {score >= 80 
+          ? 'Your comprehension has been recorded. You may now proceed.'
+          : 'Please speak with your supervisor for additional training.'}
+      </p>
     </div>
   )
 }
