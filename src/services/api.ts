@@ -1,4 +1,4 @@
-const API_URL = 'https://clearproof-api-production.up.railway.app/api'
+const API_URL = 'https://api.clearproof.co.uk/api'
 
 let getToken: (() => Promise<string | null>) | null = null
 
