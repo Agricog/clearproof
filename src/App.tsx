@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
 import ManagerLayout from './components/layouts/ManagerLayout'
 import WorkerLayout from './components/layouts/WorkerLayout'
 import Landing from './pages/Landing'
@@ -9,6 +10,15 @@ import Modules from './pages/manager/Modules'
 import Reports from './pages/manager/Reports'
 import Verify from './pages/worker/Verify'
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <SignedIn>{children}</SignedIn>
+      <SignedOut><RedirectToSignIn /></SignedOut>
+    </>
+  )
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -16,7 +26,7 @@ export default function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         
-        <Route element={<ManagerLayout />}>
+        <Route element={<ProtectedRoute><ManagerLayout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/upload" element={<Upload />} />
           <Route path="/dashboard/modules" element={<Modules />} />
