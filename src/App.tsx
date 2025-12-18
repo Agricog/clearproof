@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react'
+import AuthInit from './components/AuthInit'
 import ManagerLayout from './components/layouts/ManagerLayout'
 import WorkerLayout from './components/layouts/WorkerLayout'
 import Landing from './pages/Landing'
@@ -22,6 +23,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <BrowserRouter>
+      <AuthInit />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
