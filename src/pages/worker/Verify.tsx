@@ -20,7 +20,7 @@ const languages = [
 export default function Verify() {
   const { moduleId: _moduleId } = useParams()
   const [step, setStep] = useState<Step>('language')
-  const [selectedLanguage, setSelectedLanguage] = useState('')
+  const [_selectedLanguage, setSelectedLanguage] = useState('')
 
   // TODO: Fetch module content from SmartSuite using moduleId
   // TODO: Get translated content from Claude API
