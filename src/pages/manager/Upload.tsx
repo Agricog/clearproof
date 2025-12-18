@@ -9,6 +9,7 @@ export default function Upload() {
   const [title, setTitle] = useState('')
   const [dragActive, setDragActive] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [status, setStatus] = useState('')
   const [error, setError] = useState('')
 
   const handleDrag = (e: React.DragEvent) => {
@@ -38,27 +39,30 @@ export default function Upload() {
 
     setUploading(true)
     setError('')
+    setStatus('Reading file...')
 
     try {
-      const reader = new FileReader()
-      reader.onload = async () => {
-        const base64 = (reader.result as string).split(',')[1]
-        
-        await api.modules.create({
-          title,
-          original_content: base64,
-          file_name: file.name,
-          status: 'processing'
-        })
+      const text = await file.text()
+      
+      setStatus('Creating module...')
+      const module = await api.modules.create({
+        title,
+        original_content: text,
+        file_name: file.name,
+        status: 'processing'
+      })
 
-        navigate('/dashboard/modules')
-      }
-      reader.readAsDataURL(file)
+      setStatus('Processing with AI...')
+      await api.process.transform(module.id)
+
+      setStatus('Complete!')
+      navigate('/dashboard/modules')
     } catch (err) {
       setError('Failed to upload. Please try again.')
       console.error(err)
     } finally {
       setUploading(false)
+      setStatus('')
     }
   }
 
@@ -142,7 +146,7 @@ export default function Upload() {
           {uploading ? (
             <>
               <Loader className="animate-spin" size={18} />
-              Processing...
+              {status}
             </>
           ) : (
             'Upload & Process'
