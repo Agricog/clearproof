@@ -1,10 +1,15 @@
 import { useState } from 'react'
-import { Upload as UploadIcon, FileText, X } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Upload as UploadIcon, FileText, X, Loader } from 'lucide-react'
+import { api } from '../../services/api'
 
 export default function Upload() {
+  const navigate = useNavigate()
   const [file, setFile] = useState<File | null>(null)
   const [title, setTitle] = useState('')
   const [dragActive, setDragActive] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault()
@@ -27,10 +32,34 @@ export default function Upload() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Upload to SmartSuite, trigger Claude processing
-    console.log('Uploading:', { title, file })
+    if (!file || !title) return
+
+    setUploading(true)
+    setError('')
+
+    try {
+      const reader = new FileReader()
+      reader.onload = async () => {
+        const base64 = (reader.result as string).split(',')[1]
+        
+        await api.modules.create({
+          title,
+          original_content: base64,
+          file_name: file.name,
+          status: 'processing'
+        })
+
+        navigate('/dashboard/modules')
+      }
+      reader.readAsDataURL(file)
+    } catch (err) {
+      setError('Failed to upload. Please try again.')
+      console.error(err)
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -38,6 +67,12 @@ export default function Upload() {
       <h1 className="text-2xl font-bold text-gray-900 mb-8">Upload Content</h1>
 
       <form onSubmit={handleSubmit} className="max-w-xl">
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
+
         <div className="mb-6">
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
             Module Title
@@ -50,6 +85,7 @@ export default function Upload() {
             placeholder="e.g. Site Induction, Working at Height RAMS"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
+            disabled={uploading}
           />
         </div>
 
@@ -75,11 +111,12 @@ export default function Upload() {
                 <input
                   type="file"
                   onChange={handleFileSelect}
-                  accept=".pdf,.doc,.docx"
+                  accept=".pdf,.doc,.docx,.txt"
                   className="hidden"
+                  disabled={uploading}
                 />
               </label>
-              <p className="text-sm text-gray-500 mt-2">PDF, DOC, DOCX up to 10MB</p>
+              <p className="text-sm text-gray-500 mt-2">PDF, DOC, DOCX, TXT up to 10MB</p>
             </div>
           ) : (
             <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
@@ -89,6 +126,7 @@ export default function Upload() {
                 type="button"
                 onClick={() => setFile(null)}
                 className="text-gray-400 hover:text-gray-600"
+                disabled={uploading}
               >
                 <X size={20} />
               </button>
@@ -98,10 +136,17 @@ export default function Upload() {
 
         <button
           type="submit"
-          disabled={!file || !title}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+          disabled={!file || !title || uploading}
+          className="flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
-          Upload & Process
+          {uploading ? (
+            <>
+              <Loader className="animate-spin" size={18} />
+              Processing...
+            </>
+          ) : (
+            'Upload & Process'
+          )}
         </button>
       </form>
     </div>
