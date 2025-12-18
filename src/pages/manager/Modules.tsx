@@ -1,15 +1,42 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FileText, Users, ExternalLink, Upload } from 'lucide-react'
+import { FileText, Users, ExternalLink, Upload, Loader } from 'lucide-react'
+import { api } from '../../services/api'
+
+interface Module {
+  id: string
+  title: string
+  created_at: string
+  worker_count?: number
+  verified_count?: number
+}
 
 export default function Modules() {
-  // TODO: Fetch from SmartSuite
-  const modules: Array<{
-    id: string
-    title: string
-    createdAt: string
-    workerCount: number
-    verifiedCount: number
-  }> = []
+  const [modules, setModules] = useState<Module[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchModules() {
+      try {
+        const res = await api.modules.list()
+        setModules(res.items || [])
+      } catch (error) {
+        console.error('Failed to fetch modules:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchModules()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader className="animate-spin text-blue-600" size={32} />
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -56,16 +83,18 @@ export default function Modules() {
                       {module.title}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-gray-600">{module.createdAt}</td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {new Date(module.created_at).toLocaleDateString()}
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1 text-gray-600">
                       <Users size={16} />
-                      {module.workerCount}
+                      {module.worker_count || 0}
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <span className="text-green-600">{module.verifiedCount}</span>
-                    <span className="text-gray-400"> / {module.workerCount}</span>
+                    <span className="text-green-600">{module.verified_count || 0}</span>
+                    <span className="text-gray-400"> / {module.worker_count || 0}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link
