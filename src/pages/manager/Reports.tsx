@@ -1,22 +1,74 @@
-import { useState } from 'react'
-import { Download, FileText, Calendar } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Download, FileText, Calendar, Loader } from 'lucide-react'
+import { api } from '../../services/api'
+
+interface Verification {
+  id: string
+  worker_name?: string
+  module_title?: string
+  completed_at: string
+  score: number
+  passed: boolean
+}
 
 export default function Reports() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
+  const [reports, setReports] = useState<Verification[]>([])
+  const [loading, setLoading] = useState(true)
 
-  // TODO: Fetch from SmartSuite
-  const reports: Array<{
-    id: string
-    workerName: string
-    moduleTitle: string
-    completedAt: string
-    score: number
-  }> = []
+  useEffect(() => {
+    async function fetchReports() {
+      try {
+        const res = await api.verifications.list()
+        setReports(res.items || [])
+      } catch (error) {
+        console.error('Failed to fetch reports:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchReports()
+  }, [])
+
+  const filteredReports = reports.filter((report) => {
+    if (!dateFrom && !dateTo) return true
+    const completedAt = new Date(report.completed_at)
+    if (dateFrom && completedAt < new Date(dateFrom)) return false
+    if (dateTo && completedAt > new Date(dateTo + 'T23:59:59')) return false
+    return true
+  })
 
   const handleExport = () => {
-    // TODO: Generate CSV/PDF export
-    console.log('Exporting:', { dateFrom, dateTo })
+    const csv = [
+      ['Worker', 'Module', 'Completed', 'Score', 'Passed'].join(','),
+      ...filteredReports.map((r) =>
+        [
+          r.worker_name || 'Unknown',
+          r.module_title || 'Unknown',
+          new Date(r.completed_at).toLocaleString(),
+          `${r.score}%`,
+          r.passed ? 'Yes' : 'No'
+        ].join(',')
+      )
+    ].join('\n')
+
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `clearproof-report-${new Date().toISOString().split('T')[0]}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader className="animate-spin text-blue-600" size={32} />
+      </div>
+    )
   }
 
   return (
@@ -25,7 +77,8 @@ export default function Reports() {
         <h1 className="text-2xl font-bold text-gray-900">Compliance Reports</h1>
         <button
           onClick={handleExport}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={filteredReports.length === 0}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
         >
           <Download size={18} />
           Export
@@ -61,7 +114,7 @@ export default function Reports() {
         </div>
       </div>
 
-      {reports.length === 0 ? (
+      {filteredReports.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
           <FileText className="mx-auto text-gray-400 mb-3" size={32} />
           <p className="text-gray-600">No verification records yet</p>
@@ -78,11 +131,13 @@ export default function Reports() {
               </tr>
             </thead>
             <tbody>
-              {reports.map((report) => (
+              {filteredReports.map((report) => (
                 <tr key={report.id} className="border-b border-gray-100 last:border-0">
-                  <td className="px-4 py-3">{report.workerName}</td>
-                  <td className="px-4 py-3 text-gray-600">{report.moduleTitle}</td>
-                  <td className="px-4 py-3 text-gray-600">{report.completedAt}</td>
+                  <td className="px-4 py-3">{report.worker_name || 'Unknown'}</td>
+                  <td className="px-4 py-3 text-gray-600">{report.module_title || 'Unknown'}</td>
+                  <td className="px-4 py-3 text-gray-600">
+                    {new Date(report.completed_at).toLocaleString()}
+                  </td>
                   <td className="px-4 py-3">
                     <span className={report.score >= 80 ? 'text-green-600' : 'text-amber-600'}>
                       {report.score}%
