@@ -18,9 +18,9 @@ const languages = [
 ]
 
 export default function Verify() {
-  const { moduleId } = useParams()
+  const { moduleId: _moduleId } = useParams()
   const [step, setStep] = useState<Step>('language')
-  const [language, setLanguage] = useState('')
+  const [selectedLanguage, setSelectedLanguage] = useState('')
 
   // TODO: Fetch module content from SmartSuite using moduleId
   // TODO: Get translated content from Claude API
@@ -38,7 +38,7 @@ export default function Verify() {
             <button
               key={lang.code}
               onClick={() => {
-                setLanguage(lang.code)
+                setSelectedLanguage(lang.code)
                 setStep('content')
               }}
               className="px-4 py-3 text-left bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors"
