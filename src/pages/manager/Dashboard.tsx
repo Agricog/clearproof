@@ -1,14 +1,44 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Upload, Users, CheckCircle, AlertTriangle } from 'lucide-react'
+import { api } from '../../services/api'
 
 export default function Dashboard() {
-  // TODO: Replace with real data from SmartSuite
-  const stats = {
+  const [stats, setStats] = useState({
     modules: 0,
     workers: 0,
     verified: 0,
     pending: 0,
-  }
+  })
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const [modulesRes, workersRes, verificationsRes] = await Promise.all([
+          api.modules.list(),
+          api.workers.list(),
+          api.verifications.list()
+        ])
+
+        const verifications = verificationsRes.items || []
+        const verified = verifications.filter((v: { passed?: boolean }) => v.passed).length
+
+        setStats({
+          modules: modulesRes.items?.length || 0,
+          workers: workersRes.items?.length || 0,
+          verified,
+          pending: verifications.length - verified,
+        })
+      } catch (error) {
+        console.error('Failed to fetch stats:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [])
 
   return (
     <div>
@@ -20,7 +50,9 @@ export default function Dashboard() {
             <Upload className="text-blue-600" size={20} />
             <span className="text-sm text-gray-600">Modules</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.modules}</div>
+          <div className="text-2xl font-bold text-gray-900">
+            {loading ? '—' : stats.modules}
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -28,7 +60,9 @@ export default function Dashboard() {
             <Users className="text-blue-600" size={20} />
             <span className="text-sm text-gray-600">Workers</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.workers}</div>
+          <div className="text-2xl font-bold text-gray-900">
+            {loading ? '—' : stats.workers}
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -36,7 +70,9 @@ export default function Dashboard() {
             <CheckCircle className="text-green-600" size={20} />
             <span className="text-sm text-gray-600">Verified</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.verified}</div>
+          <div className="text-2xl font-bold text-gray-900">
+            {loading ? '—' : stats.verified}
+          </div>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4">
@@ -44,7 +80,9 @@ export default function Dashboard() {
             <AlertTriangle className="text-amber-600" size={20} />
             <span className="text-sm text-gray-600">Pending</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">{stats.pending}</div>
+          <div className="text-2xl font-bold text-gray-900">
+            {loading ? '—' : stats.pending}
+          </div>
         </div>
       </div>
 
