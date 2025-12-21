@@ -78,14 +78,14 @@ export default function Verify() {
   }
 
   const handleInfoSubmit = async () => {
-    if (!module?.processed_content) {
+    if (!module?.sde7e5250a) {
       setError('Module content not ready')
       return
     }
 
     setProcessing(true)
     try {
-      let content = module.processed_content
+      let content = module.sde7e5250a
 
       if (selectedLanguage !== 'en') {
         const translated = await api.process.translate(content, selectedLanguage)
