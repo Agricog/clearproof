@@ -34,7 +34,8 @@ interface Question {
 interface Module {
   id: string
   title: string
-  processed_content?: string
+  sde7e5250a?: string  // processed_content field ID
+  sceb501715?: string  // questions field ID
 }
 
 export default function Verify() {
