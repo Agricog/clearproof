@@ -12,14 +12,12 @@ import {
   Truck,
   Factory,
   ArrowRight,
-  Phone,
   Mail
 } from 'lucide-react'
 
 export default function Landing() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
         <div className="text-xl font-bold text-blue-600">ClearProof</div>
         <nav className="flex items-center gap-6">
@@ -36,7 +34,6 @@ export default function Landing() {
       </header>
 
       <main>
-        {/* Hero Section */}
         <section className="max-w-5xl mx-auto px-6 py-20 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
             Proof They Understood Your Safety Content
@@ -60,7 +57,6 @@ export default function Landing() {
             </a>
           </div>
           
-          {/* Trust Indicators */}
           <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-500">
             <span className="flex items-center gap-2">
               <CheckCircle size={16} className="text-green-600" />
@@ -77,7 +73,6 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Features Section */}
         <section id="features" className="bg-gray-50 py-20">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-12">
@@ -125,7 +120,6 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* How It Works Section */}
         <section id="how-it-works" className="py-20">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-12">
@@ -145,7 +139,7 @@ export default function Landing() {
                 <div className="text-sm font-medium text-blue-600 mb-2">Step 1</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Upload Your Content</h3>
                 <p className="text-gray-600">
-                  Upload your H&S documents — RAMS, inductions, procedures. PDF or text formats supported.
+                  Upload your H&amp;S documents — RAMS, inductions, procedures. PDF or text formats supported.
                 </p>
               </div>
               
@@ -174,7 +168,6 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Industries Section */}
         <section id="industries" className="bg-gray-50 py-20">
           <div className="max-w-5xl mx-auto px-6">
             <div className="text-center mb-12">
@@ -182,7 +175,7 @@ export default function Landing() {
                 Built for Safety-Critical Industries
               </h2>
               <p className="text-lg text-gray-600">
-                Trusted by teams who can't afford miscommunication
+                Trusted by teams who cannot afford miscommunication
               </p>
             </div>
             
@@ -207,7 +200,6 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* CTA Section */}
         <section className="py-20">
           <div className="max-w-3xl mx-auto px-6 text-center">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
@@ -227,14 +219,13 @@ export default function Landing() {
         </section>
       </main>
 
-      {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-12">
         <div className="max-w-5xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="text-xl font-bold text-white mb-4">ClearProof</div>
               <p className="text-sm">
-                Multilingual H&S comprehension verification for safety-critical industries.
+                Multilingual H&amp;S comprehension verification for safety-critical industries.
               </p>
             </div>
             
