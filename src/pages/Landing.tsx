@@ -24,10 +24,7 @@ export default function Landing() {
           <a href="#features" className="text-gray-600 hover:text-gray-900 hidden sm:block">Features</a>
           <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 hidden sm:block">How It Works</a>
           <a href="#industries" className="text-gray-600 hover:text-gray-900 hidden sm:block">Industries</a>
-          <Link
-            to="/login"
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
+          <Link to="/login" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             Sign In
           </Link>
         </nav>
@@ -42,21 +39,14 @@ export default function Landing() {
             Multilingual health and safety comprehension verification. Deliver safety content in any language, verify true understanding with AI-powered questions, and maintain HSE-ready audit trails.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <Link
-              to="/login"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
+            <Link to="/login" className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
               Start Free Trial
               <ArrowRight size={18} />
             </Link>
-            
-              href="#how-it-works"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-            >
+            <a href="#how-it-works" className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
               See How It Works
             </a>
           </div>
-          
           <div className="flex flex-wrap justify-center gap-8 text-sm text-gray-500">
             <span className="flex items-center gap-2">
               <CheckCircle size={16} className="text-green-600" />
@@ -83,7 +73,6 @@ export default function Landing() {
                 Stop relying on signatures that prove nothing. Get real proof your workers understood the safety content.
               </p>
             </div>
-            
             <div className="grid md:grid-cols-2 gap-8">
               <article className="bg-white p-6 rounded-xl border border-gray-200">
                 <Globe className="text-blue-600 mb-4" size={32} />
@@ -92,7 +81,6 @@ export default function Landing() {
                   Workers receive safety content automatically translated and simplified in their native language. No more language barriers compromising safety understanding.
                 </p>
               </article>
-              
               <article className="bg-white p-6 rounded-xl border border-gray-200">
                 <ClipboardCheck className="text-blue-600 mb-4" size={32} />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Real Comprehension Testing</h3>
@@ -100,7 +88,6 @@ export default function Landing() {
                   AI-generated scenario-based questions test actual understanding, not just reading ability. No more tick-box exercises that prove nothing.
                 </p>
               </article>
-              
               <article className="bg-white p-6 rounded-xl border border-gray-200">
                 <FileSearch className="text-blue-600 mb-4" size={32} />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">HSE-Ready Audit Trails</h3>
@@ -108,7 +95,6 @@ export default function Landing() {
                   Complete records of what each worker received, in which language, their answers, scores, and timestamps. Ready for any inspection.
                 </p>
               </article>
-              
               <article className="bg-white p-6 rounded-xl border border-gray-200">
                 <Shield className="text-blue-600 mb-4" size={32} />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Your Content, Your Control</h3>
@@ -130,7 +116,6 @@ export default function Landing() {
                 Three simple steps to verified safety comprehension
               </p>
             </div>
-            
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -139,10 +124,9 @@ export default function Landing() {
                 <div className="text-sm font-medium text-blue-600 mb-2">Step 1</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Upload Your Content</h3>
                 <p className="text-gray-600">
-                  Upload your H&amp;S documents — RAMS, inductions, procedures. PDF or text formats supported.
+                  Upload your safety documents including RAMS, inductions, and procedures. PDF or text formats supported.
                 </p>
               </div>
-              
               <div className="text-center">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <QrCode className="text-blue-600" size={28} />
@@ -150,10 +134,9 @@ export default function Landing() {
                 <div className="text-sm font-medium text-blue-600 mb-2">Step 2</div>
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">Share QR Code</h3>
                 <p className="text-gray-600">
-                  Print the QR code and display on site. Workers scan with their phone — no app download needed.
+                  Print the QR code and display on site. Workers scan with their phone with no app download needed.
                 </p>
               </div>
-              
               <div className="text-center">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="text-blue-600" size={28} />
@@ -178,7 +161,6 @@ export default function Landing() {
                 Trusted by teams who cannot afford miscommunication
               </p>
             </div>
-            
             <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
               <div className="bg-white p-6 rounded-xl border border-gray-200 text-center">
                 <HardHat className="text-blue-600 mx-auto mb-3" size={32} />
@@ -208,10 +190,7 @@ export default function Landing() {
             <p className="text-lg text-gray-600 mb-8">
               Start verifying safety comprehension today. Free to try, no credit card required.
             </p>
-            <Link
-              to="/login"
-              className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
-            >
+            <Link to="/login" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg">
               Get Started Free
               <ArrowRight size={20} />
             </Link>
@@ -225,10 +204,9 @@ export default function Landing() {
             <div>
               <div className="text-xl font-bold text-white mb-4">ClearProof</div>
               <p className="text-sm">
-                Multilingual H&amp;S comprehension verification for safety-critical industries.
+                Multilingual safety comprehension verification for safety-critical industries.
               </p>
             </div>
-            
             <div>
               <h4 className="font-semibold text-white mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
@@ -237,7 +215,6 @@ export default function Landing() {
                 <li><a href="#industries" className="hover:text-white transition-colors">Industries</a></li>
               </ul>
             </div>
-            
             <div>
               <h4 className="font-semibold text-white mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
@@ -245,7 +222,6 @@ export default function Landing() {
                 <li><Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
               </ul>
             </div>
-            
             <div>
               <h4 className="font-semibold text-white mb-4">Contact</h4>
               <ul className="space-y-2 text-sm">
@@ -256,9 +232,8 @@ export default function Landing() {
               </ul>
             </div>
           </div>
-          
           <div className="border-t border-gray-800 pt-8 text-sm text-center">
-            <p>&copy; {new Date().getFullYear()} ClearProof. All rights reserved.</p>
+            <p>© {new Date().getFullYear()} ClearProof. All rights reserved.</p>
           </div>
         </div>
       </footer>
