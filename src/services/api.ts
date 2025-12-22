@@ -42,6 +42,9 @@ export const api = {
     update: (id: string, data: Record<string, unknown>) => request(`/modules/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data)
+    }),
+    delete: (id: string) => request(`/modules/${id}`, {
+      method: 'DELETE'
     })
   },
   workers: {
