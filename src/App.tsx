@@ -5,6 +5,8 @@ import ManagerLayout from './components/layouts/ManagerLayout'
 import WorkerLayout from './components/layouts/WorkerLayout'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
+import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
 import Dashboard from './pages/manager/Dashboard'
 import Upload from './pages/manager/Upload'
 import Modules from './pages/manager/Modules'
@@ -27,6 +29,8 @@ export default function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
         
         <Route element={<ProtectedRoute><ManagerLayout /></ProtectedRoute>}>
           <Route path="/dashboard" element={<Dashboard />} />
