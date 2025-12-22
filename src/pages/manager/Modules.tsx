@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FileText, Users, ExternalLink, Upload, Loader } from 'lucide-react'
+import { FileText, Users, ExternalLink, Upload, Loader, QrCode } from 'lucide-react'
 import { api } from '../../services/api'
+
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.clearproof.co.uk'
 
 interface Module {
   id: string
@@ -29,6 +31,13 @@ export default function Modules() {
 
     fetchModules()
   }, [])
+
+  const handleDownloadQR = (moduleId: string, title: string) => {
+    const link = document.createElement('a')
+    link.href = `${API_URL}/api/modules/${moduleId}/qr`
+    link.download = `qr-${title.replace(/\s+/g, '-').toLowerCase()}.png`
+    link.click()
+  }
 
   if (loading) {
     return (
@@ -84,7 +93,7 @@ export default function Modules() {
                     </div>
                   </td>
                   <td className="px-4 py-3 text-gray-600">
-                    {new Date(module.created_at).toLocaleDateString()}
+                    {module.created_at ? new Date(module.created_at).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1 text-gray-600">
@@ -97,14 +106,23 @@ export default function Modules() {
                     <span className="text-gray-400"> / {module.worker_count || 0}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Link
-                      to={`/verify/${module.id}`}
-                      target="_blank"
-                      className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm"
-                    >
-                      Worker Link
-                      <ExternalLink size={14} />
-                    </Link>
+                    <div className="flex items-center justify-end gap-3">
+                      <button
+                        onClick={() => handleDownloadQR(module.id, module.title)}
+                        className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900 text-sm"
+                        title="Download QR Code"
+                      >
+                        <QrCode size={16} />
+                      </button>
+                      <Link
+                        to={`/verify/${module.id}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 text-blue-600 hover:underline text-sm"
+                      >
+                        Worker Link
+                        <ExternalLink size={14} />
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
