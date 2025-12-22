@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FileText, Users, ExternalLink, Upload, Loader, QrCode } from 'lucide-react'
+import { FileText, Users, ExternalLink, Upload, Loader, QrCode, Trash2 } from 'lucide-react'
 import { api } from '../../services/api'
 
 const API_URL = import.meta.env.VITE_API_URL || 'https://api.clearproof.co.uk'
@@ -16,27 +16,45 @@ interface Module {
 export default function Modules() {
   const [modules, setModules] = useState<Module[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   useEffect(() => {
-    async function fetchModules() {
-      try {
-        const res = await api.modules.list()
-        setModules(res.items || [])
-      } catch (error) {
-        console.error('Failed to fetch modules:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchModules()
   }, [])
+
+  async function fetchModules() {
+    try {
+      const res = await api.modules.list()
+      setModules(res.items || [])
+    } catch (error) {
+      console.error('Failed to fetch modules:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleDownloadQR = (moduleId: string, title: string) => {
     const link = document.createElement('a')
     link.href = `${API_URL}/api/modules/${moduleId}/qr`
     link.download = `qr-${title.replace(/\s+/g, '-').toLowerCase()}.png`
     link.click()
+  }
+
+  const handleDelete = async (moduleId: string, title: string) => {
+    if (!confirm(`Are you sure you want to delete "${title}"? This cannot be undone.`)) {
+      return
+    }
+
+    setDeleting(moduleId)
+    try {
+      await api.modules.delete(moduleId)
+      setModules(modules.filter(m => m.id !== moduleId))
+    } catch (error) {
+      console.error('Failed to delete module:', error)
+      alert('Failed to delete module. Please try again.')
+    } finally {
+      setDeleting(null)
+    }
   }
 
   if (loading) {
@@ -122,6 +140,18 @@ export default function Modules() {
                         Worker Link
                         <ExternalLink size={14} />
                       </Link>
+                      <button
+                        onClick={() => handleDelete(module.id, module.title)}
+                        disabled={deleting === module.id}
+                        className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 text-sm disabled:opacity-50"
+                        title="Delete Module"
+                      >
+                        {deleting === module.id ? (
+                          <Loader className="animate-spin" size={16} />
+                        ) : (
+                          <Trash2 size={16} />
+                        )}
+                      </button>
                     </div>
                   </td>
                 </tr>
