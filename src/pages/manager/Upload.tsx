@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { Upload as UploadIcon, FileText, X, Loader } from 'lucide-react'
 import { api } from '../../services/api'
 
+const API_URL = import.meta.env.VITE_API_URL || 'https://api.clearproof.co.uk'
+
 export default function Upload() {
   const navigate = useNavigate()
   const [file, setFile] = useState<File | null>(null)
@@ -39,15 +41,33 @@ export default function Upload() {
 
     setUploading(true)
     setError('')
-    setStatus('Reading file...')
+    setStatus('Parsing file...')
 
     try {
-      const text = await file.text()
+      // Upload file to backend for parsing
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const token = await window.Clerk?.session?.getToken()
+      const uploadRes = await fetch(`${API_URL}/api/modules/upload`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      })
+
+      if (!uploadRes.ok) {
+        const err = await uploadRes.json()
+        throw new Error(err.error || 'Failed to parse file')
+      }
+
+      const { content } = await uploadRes.json()
       
       setStatus('Creating module...')
       const module = await api.modules.create({
         title,
-        original_content: text,
+        original_content: content,
         file_name: file.name,
         status: 'processing'
       })
@@ -58,7 +78,7 @@ export default function Upload() {
       setStatus('Complete!')
       navigate('/dashboard/modules')
     } catch (err) {
-      setError('Failed to upload. Please try again.')
+      setError(err instanceof Error ? err.message : 'Failed to upload. Please try again.')
       console.error(err)
     } finally {
       setUploading(false)
@@ -115,12 +135,12 @@ export default function Upload() {
                 <input
                   type="file"
                   onChange={handleFileSelect}
-                  accept=".pdf,.doc,.docx,.txt"
+                  accept=".pdf,.txt"
                   className="hidden"
                   disabled={uploading}
                 />
               </label>
-              <p className="text-sm text-gray-500 mt-2">PDF, DOC, DOCX, TXT up to 10MB</p>
+              <p className="text-sm text-gray-500 mt-2">PDF or TXT up to 10MB</p>
             </div>
           ) : (
             <div className="flex items-center gap-3 p-3 bg-gray-50 border border-gray-200 rounded-lg">
