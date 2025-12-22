@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { Globe, ChevronRight, CheckCircle, Loader, AlertCircle } from 'lucide-react'
 import { api } from '../../services/api'
@@ -34,8 +34,8 @@ interface Question {
 interface Module {
   id: string
   title: string
-  sde7e5250a?: string  // processed_content field ID
-  sceb501715?: string  // questions field ID
+  sde7e5250a?: string
+  sceb501715?: string
 }
 
 export default function Verify() {
@@ -54,6 +54,10 @@ export default function Verify() {
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [score, setScore] = useState(0)
+  
+  // Anti-bot measures
+  const startTime = useRef(Date.now())
+  const [honeypot, setHoneypot] = useState('')
 
   useEffect(() => {
     async function fetchModule() {
@@ -159,7 +163,11 @@ export default function Verify() {
         answers: JSON.stringify(answers),
         score: calculatedScore,
         passed: calculatedScore >= 80,
-        completed_at: new Date().toISOString()
+        completed_at: new Date().toISOString(),
+        // Anti-bot fields
+        _start_time: startTime.current.toString(),
+        website: honeypot,
+        company_url: honeypot
       })
 
       setStep('complete')
@@ -244,6 +252,18 @@ export default function Verify() {
               required
             />
           </div>
+          
+          {/* Honeypot field - hidden from real users */}
+          <input
+            type="text"
+            name="website"
+            value={honeypot}
+            onChange={(e) => setHoneypot(e.target.value)}
+            className="absolute -left-[9999px] opacity-0 h-0 w-0"
+            tabIndex={-1}
+            autoComplete="off"
+            aria-hidden="true"
+          />
         </div>
 
         <button
