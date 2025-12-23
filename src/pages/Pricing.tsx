@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, ArrowLeft } from 'lucide-react'
+import { Check, ArrowLeft, Loader } from 'lucide-react'
+import { useUser, useAuth } from '@clerk/clerk-react'
+import { api } from '../services/api'
 
 const tiers = [
   {
@@ -7,6 +10,7 @@ const tiers = [
     price: '£0',
     period: 'forever',
     description: 'Try ClearProof with no commitment',
+    planId: 'free',
     features: [
       '1 module',
       '10 verifications/month',
@@ -23,6 +27,7 @@ const tiers = [
     price: '£39',
     period: '/month',
     description: 'For small sites and contractors',
+    planId: 'starter',
     features: [
       '5 modules',
       '100 verifications/month',
@@ -41,6 +46,7 @@ const tiers = [
     price: '£99',
     period: '/month',
     description: 'For growing construction firms',
+    planId: 'professional',
     features: [
       '20 modules',
       '500 verifications/month',
@@ -60,6 +66,7 @@ const tiers = [
     price: '£249',
     period: '/month',
     description: 'For large multi-site operations',
+    planId: 'enterprise',
     features: [
       '50 modules',
       '2,000 verifications/month',
@@ -73,7 +80,7 @@ const tiers = [
       'Dedicated account manager',
       'Custom integrations',
     ],
-    cta: 'Contact Sales',
+    cta: 'Start Free Trial',
     highlighted: false,
   },
 ]
@@ -98,6 +105,44 @@ const faqs = [
 ]
 
 export default function Pricing() {
+  const { isSignedIn, user } = useUser()
+  const { getToken } = useAuth()
+  const [loading, setLoading] = useState<string | null>(null)
+
+  const handleCheckout = async (planId: string) => {
+    if (planId === 'free') {
+      window.location.href = '/login'
+      return
+    }
+
+    if (!isSignedIn) {
+      window.location.href = '/login'
+      return
+    }
+
+    setLoading(planId)
+    try {
+      // Set up auth token for API
+      const token = await getToken()
+      if (token) {
+        const { setAuthGetter } = await import('../services/api')
+        setAuthGetter(async () => token)
+      }
+
+      const email = user?.primaryEmailAddress?.emailAddress || ''
+      const result = await api.billing.createCheckout(planId, email)
+      
+      if (result.url) {
+        window.location.href = result.url
+      }
+    } catch (error) {
+      console.error('Checkout error:', error)
+      alert('Failed to start checkout. Please try again.')
+    } finally {
+      setLoading(null)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <header className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
@@ -151,16 +196,24 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <Link
-                to={tier.name === 'Enterprise' ? 'mailto:hello@clearproof.co.uk' : '/login'}
-                className={`block text-center py-2 px-4 rounded-lg font-medium transition-colors ${
+              <button
+                onClick={() => handleCheckout(tier.planId)}
+                disabled={loading !== null}
+                className={`block text-center py-2 px-4 rounded-lg font-medium transition-colors disabled:opacity-50 ${
                   tier.highlighted
                     ? 'bg-blue-600 text-white hover:bg-blue-700'
                     : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
                 }`}
               >
-                {tier.cta}
-              </Link>
+                {loading === tier.planId ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader size={16} className="animate-spin" />
+                    Loading...
+                  </span>
+                ) : (
+                  tier.cta
+                )}
+              </button>
             </div>
           ))}
         </div>
