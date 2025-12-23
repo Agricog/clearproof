@@ -75,5 +75,15 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ content, language })
     }, false)
+  },
+  billing: {
+    getSubscription: () => request('/billing/subscription'),
+    createCheckout: (plan: string, email: string) => request('/billing/checkout', {
+      method: 'POST',
+      body: JSON.stringify({ plan, email })
+    }),
+    createPortal: () => request('/billing/portal', {
+      method: 'POST'
+    })
   }
 }
