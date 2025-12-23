@@ -23,7 +23,7 @@ export default function Landing() {
         <nav className="flex items-center gap-6">
           <a href="#features" className="text-gray-600 hover:text-gray-900 hidden sm:block">Features</a>
           <a href="#how-it-works" className="text-gray-600 hover:text-gray-900 hidden sm:block">How It Works</a>
-          <a href="#industries" className="text-gray-600 hover:text-gray-900 hidden sm:block">Industries</a>
+          <Link to="/pricing" className="text-gray-600 hover:text-gray-900 hidden sm:block">Pricing</Link>
           <Link to="/login" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             Sign In
           </Link>
@@ -212,7 +212,7 @@ export default function Landing() {
               <ul className="space-y-2 text-sm">
                 <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
                 <li><a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
-                <li><a href="#industries" className="hover:text-white transition-colors">Industries</a></li>
+                <li><Link to="/pricing" className="hover:text-white transition-colors">Pricing</Link></li>
               </ul>
             </div>
             <div>
